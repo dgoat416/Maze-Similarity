@@ -1,3 +1,4 @@
+
 // Deron Washington II
 import java.io.File;
 import java.util.Scanner;
@@ -6,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Stack;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.awt.Point;
 
 /**
@@ -13,12 +16,12 @@ import java.awt.Point;
  * 
  * @author DGOAT 
  * Date Started: 11/2/2020
- * Last Edit: 11/2/2020 Date Finished:
+ * Last Edit: 11/2/2020 
+ * Date Finished:
  * RESULT:
  * 
  */
-public class Main 
-{
+public class Main {
 
 	// static reference to the mazes of the room
 	public static List<Room[][]> mazes = new ArrayList<Room[][]>();
@@ -26,8 +29,7 @@ public class Main
 	/**
 	 * Class to define a single cell in the array
 	 */
-	public static class Room 
-	{
+	public static class Room {
 		// north
 		public int n;
 
@@ -40,18 +42,31 @@ public class Main
 		// east
 		public int e;
 
+		// holds the position in the maze (vertical, horizontal)
+		public myPoint p;
+
 		// Default Constructor
-		public Room() 
-		{
+		public Room() {
+			// location within the maze
+			p = new myPoint(0, 0);
+
+			// directional options
 			n = 0;
 			s = 0;
 			w = 0;
 			e = 0;
 		}
 
-		// Parameterized Constructor
-		public Room(int n, int s, int w, int e) 
-		{
+		/**
+		 * Parameterized Constructor
+		 * @param p = point object detailing location the room is at in the maze
+		 * @param n = details whether the north option is doable or not
+		 * @param s = details whether the south option is doable or not
+		 * @param w = details whether the west option is doable or not
+		 * @param e = details whether the east option is doable or not
+		 */
+		public Room(Point p, int n, int s, int w, int e) {
+			this.p = new myPoint(p);
 			this.n = n;
 			this.s = s;
 			this.w = w;
@@ -70,8 +85,7 @@ public class Main
 		 * 
 		 * @return the number of options we have to get out of the current room
 		 */
-		public int getOptions() 
-		{
+		public int getOptions() {
 			int preSum = n + s + w + e;
 
 			switch (preSum) {
@@ -90,18 +104,169 @@ public class Main
 			// something went wrong
 			return Integer.MAX_VALUE;
 		}
-	
 
 		/**
 		 * Method to represent this object as a string
 		 */
-		public String toString()
-		{
-			return "[" + n + " " + s + " " + w + " " + e + "]";
+		public String toString() {
+			return "Located at:" + p + "With configuration: [" + n + " " + s + " " + w + " " + e + "]";
 		}
 	}
 
+	/**
+	 * New point object to be comparable and cast from myPoint to Point
+	 * Also allows for mathematical operations of addition and subtraction
+	 * May also use the equals method to compare for equality
+	 * @author DGOAT
+	 *
+	 */
+	public static class myPoint extends Point implements Comparable<Point> {
+		/**
+		 * Serial Version UID because we extended Point and Point is serializable
+		 */
+		private static final long serialVersionUID = 3504962621239841892L;
 
+		// coordinate x will be vertical and y will be horizontal in board
+		public Point iPoint;
+
+		@Override
+		public String toString() {
+			return iPoint.toString();
+		}
+
+		/**
+		 * Compares two points
+		 * @param p = another point object for comparison
+		 */
+		@Override
+		public int compareTo(Point p) {
+			if (iPoint.x == p.x) {
+				if (iPoint.y == p.y)
+					return 0;
+				else if (iPoint.y < p.y)
+					return -1;
+				else if (iPoint.y > p.y)
+					return 1;
+			} else if (iPoint.x < p.x)
+				return -1;
+
+			else if (iPoint.x > p.x)
+				return 1;
+
+			// error
+			return -999;
+		}
+
+		/**
+		 * Default Constuctor
+		 */
+		public myPoint() {
+			super(new Point(0, 0));
+			iPoint = new Point(0, 0);
+		}
+
+		/**
+		 * Parameterized Constructor
+		 * @param x = x value of the point
+		 * @param y = y value of the point
+		 */
+		public myPoint(int x, int y) {
+			super(x, y);
+			iPoint = new Point();
+			iPoint.x = x;
+			iPoint.y = y;
+		}
+
+		/**
+		 * Parameterized Constructor
+		 * @param p = a point object to initialize this object with
+		 */
+		public myPoint(Point p) {
+			super(p);
+			iPoint = p;
+		}
+
+		/**
+		 * Method to add two myPoint objects
+		 * @param addend = the object to be added
+		 * @return
+		 * 				= the sum of the two point objects
+		 */
+		public myPoint add(myPoint addend) {
+			return new myPoint(this.x + addend.x, this.y + addend.y);
+		}
+
+		/**
+		 * Method to add two myPoint objects
+		 * @param addend = the object to be added
+		 * @return
+		 * 				= the sum of the two point objects
+		 */
+		public myPoint subtract(myPoint addend) {
+			return new myPoint(this.x - addend.x, this.y - addend.y);
+		}
+
+		/**
+		 * Method to get the absolute value of a my point object
+		 * @param p = the object to take the absolute value
+		 * @return = the object with all positive values
+		 */
+		public static myPoint abs(myPoint p) {
+			return (new myPoint(Math.abs(p.x), Math.abs(p.y)));
+		}
+
+		/**
+		 * Method to determine if an object 
+		 * is equivalent to this
+		 @return 
+		 			= true if the data members are equal
+		 			= false otherwise
+		 */
+		@Override
+		public boolean equals(Object o) {
+			// if comparing this object with itself then return true
+			if (o == this)
+				return true;
+
+			// Check if o is an instance of myPoint or Point 
+			// "null instanceof [type]" also returns false */
+			if (!(o instanceof myPoint) || !(o instanceof Point)) {
+				return false;
+			}
+
+			// // typecast o to myPoint so that we can compare data members  
+			// myPoint c = (myPoint) o;
+
+			// Normally would just compare the data members and return accordingly  
+			// but since we have a super type that will do the same thing we use it
+			// could have just did this line but wanted to practice with overriding
+			// equals and hashcode
+			return super.equals(o);
+		}
+
+		/**
+		 * Method to calculate the hashcode
+		 */
+		@Override
+		public int hashCode() {
+			int hash = 17;
+			hash = 31 * hash + x;
+			hash = 31 * hash + y;
+			return hash;
+		}
+
+	}
+
+	/**
+	 * Method to determine the longest common subsequence 
+	 * between two strings
+	 * @param s = string 1
+	 * @param t = string 2
+	 * @return = the substring and the length of the substring
+	 */
+	public static int lcs(String s, String t) {
+		return 0;
+	}
 
 	/**
 	 * Method to determine if we can perform DFS on a certain path
@@ -111,8 +276,7 @@ public class Main
 	 * @return = true if the proposed operation is allowed and false otherwise (if the proposed operation will lead us to
 	 * 			 array out of bounds exception or into a wall)
 	 */
-	public static boolean canGo(String direction, Room room)
-	{
+	public static boolean canGo(String direction, Room room) {
 
 		if (direction.toUpperCase().equals("NORTH")) {
 			if (room.n == 1)
@@ -131,8 +295,95 @@ public class Main
 					+ "No correct direction attribute specified.\n\n ");
 		}
 
-
 		return true;
+	}
+
+	/**
+	 * Method to "close the door" after we go pursue 
+	 * that pathway
+	 * @param maze = current maze we are in
+	 * @param curr = current point in maze
+	 * @param c = direction that we are going relative to curr
+	 * @return = maze reflecting closed door changes
+	 */
+	public static Room[][] closeDoor(Room[][] maze, Point curr, char c) {
+		c = Character.toUpperCase(c);
+
+		// going north
+		if (c == 'N') {
+			// "close the door"
+			maze[curr.x][curr.y].n = 1;
+			maze[curr.x - 1][curr.y].s = 1;
+		}
+
+		// going south
+		else if (c == 'S') {
+			// "close the door"
+			maze[curr.x][curr.y].s = 1;
+			maze[curr.x + 1][curr.y].n = 1;
+		}
+
+		// going west
+		else if (c == 'W') {
+			// "close the door"
+			maze[curr.x][curr.y].w = 1;
+			maze[curr.x][curr.y - 1].e = 1;
+		}
+
+		// going east
+		else if (c == 'E') {
+			// "close the door"
+			maze[curr.x][curr.y].e = 1;
+			maze[curr.x][curr.y + 1].w = 1;
+		}
+
+		// error
+		else {
+			System.out.print("Error error!!!!");
+			System.exit(-1);
+		}
+
+		return maze;
+	}
+
+	/**
+	 * Method to get the direction that was enacted on current to create next
+	 * @param current = current position
+	 * @param next = next position
+	 * @return = character representing the direction we took
+	 */
+	public static char getDirection(myPoint current, myPoint next) {
+		myPoint diff = next.subtract(current);
+
+		// same point send back a blank
+		if (diff.equals(new myPoint(0, 0))) {
+			return '\0';
+		}
+
+		// south
+		if (diff.x == 1) {
+			return 'S';
+		}
+
+		// north
+		else if (diff.x == -1) {
+			return 'N';
+		}
+
+		// west
+		else if (diff.y == -1) {
+			return 'W';
+		}
+
+		// east
+		else if (diff.y == 1) {
+			return 'E';
+		}
+
+		// failed somehow
+		System.out.print("WE FAILED");
+		System.exit(-1);
+		return 'f';
 	}
 
 	/**
@@ -140,24 +391,30 @@ public class Main
 	 * @param maze = a 2d array holding Room objects 
 	 * @return = a string representing the path that the dfs traveled by
 	 */
-	public static String depthFirstSearch(Room[][] maze)
-	{
+	public static String depthFirstSearch(Room[][] maze) {
 		/**
-		 * This is where I left off. We will use the tracker to determine 
-		 * where to go in the maze when backtracking
-		 * 
-		 * As of right now thinking of adding to the stack in the backwards
-		 * order EWSN due to the LIFO principle
+		 * ALGORITHM: 
+		 * Essentially use a stack to keep track of the "recursive calls" to the dfs. Due to the LIFO nature of the stack I will check in the opposite precedence when evaluating what the next path should be. So instead of checking in the original (NSWE) format I will check in EWSN precedence to ensure that the precedence is maintained through the stack (could have changed it to a Queue in theory but didn't want to.
+		 *
+		 * More notable points of the algo:
+		 *		- add to string path a capital letter for non-backtracking paths and a lowercase letter for backtracking 
+		 *	
+		 *		- keep a hashmap to track the direction that the room was entered on for example if I enter a room using a north operation then I would store the value of the hashmap as the point say (2,0) and would store the value as 'N' for north
+		 * 	
+		 *		- add to the path only when you pop off the stack or when doing backtracking step using hashmap
+		 *	
+		 *		- to backtrack use the hashmap to get the recorded value and perform the opposite operation to the current point within the maze 
+		 *
 		 */
 
 		// this will track the path keeping all elements which we will return 
 		String path = "";
 
-		// this will track the path and remove elements to stay up to date when backtracking
-		List<Point> tracker = new ArrayList<Point>();
+		// this will keep track of each point in the maze and the operation was used to enter into that room (point in the maze)
+		Map<myPoint, Character> tracker = new HashMap<myPoint, Character>();
 
 		// keeps track of the point we are at in the maze
-		Point curr = new Point(0, 0);
+		myPoint curr = new myPoint(0, 0);
 
 		// room we start at in the maze
 		Room start = maze[0][0];
@@ -168,66 +425,112 @@ public class Main
 		// implement this using a stack for efficiency purposes
 		Stack<Room> callStack = new Stack<Room>();
 
+		// character to add to the path
+		char c = '\0';
 
 		// push starting point on the stack
 		callStack.push(start);
-		tracker.add(curr);
-		
+		tracker.put(curr, 'D');
 
 		// while not empty
-		while (!callStack.isEmpty())
-		{
+		while (!callStack.isEmpty()) {
 			// pop the node off the stack and process it as in a recursive function call
 			room = callStack.pop();
+
+			// get the direction to add to the path (dest - curr)
+			c = getDirection(curr, room.p);
+
+			// only add to the path & close the doors if we are not backtracking
+			if (c != '\0') {
+				path += c;
+				maze = closeDoor(maze, curr, c);
+			}
+
+			// get new current
+			curr = room.p;
+
+			// add current spot to tracker if it is not already in tracker
+			if (tracker.containsKey(curr) == false) {
+				tracker.put(curr, c);
+			}
 
 			/* 
 				base case (no path out of the current room)
 				so we go back to the previous node			
 			*/
-			if(room.getOptions() == 0)
-			{
-				// (push it back on the stack ^^^)
-				// at starting position
-				if (room.equals(start))
-				{
+			if (room.getOptions() == 0) {
+				// at starting position?
+				if (room.p.equals(start.p)) {
 					// we are done
 					break;
 				}
 
-				
+				// go back to the location that the room was first entered from
+				Character goBack = tracker.get(curr);
 
-			}
+				// perform the operation to get us back
+				switch (Character.toUpperCase(goBack)) {
+					case 'N': {
+						// go south 
+						curr.x++;
+						path += 's';
+						break;
+					}
+					case 'S': {
+						// go north
+						curr.x--;
+						path += 'n';
+						break;
+					}
+					case 'W': {
+						// go east
+						curr.y++;
+						path += 'e';
+						break;
+					}
+					case 'E': {
+						// go west
+						curr.y--;
+						path += 'w';
+						break;
+					}
+					default: {
+						System.out.print("There is a mistake!");
+						System.exit(-1);
+					}
 
-			// go north
-			if(canGo("north", room))
-			{
-				// push northern node onto the stack 
-			}
-			
-			// go south
-			if (canGo("south", room))
-			{
-				// push southern node onto the stack
-			}
+				}
 
-
-			// go west
-			if (canGo("west", room))
-			{
-				// push western node onto the stack
+				// push maze at current onto the stack
+				callStack.push(maze[curr.x][curr.y]);
+				continue;
 			}
 
 			// go east
-			if (canGo("east", room))
-			{
+			if (canGo("east", room)) {
 				// push eastern node onto the stack
+				callStack.push(maze[curr.x][curr.y + 1]);
 			}
 
+			// go west
+			if (canGo("west", room)) {
+				// push western node onto the stack
+				callStack.push(maze[curr.x][curr.y - 1]);
+			}
 
+			// go south
+			if (canGo("south", room)) {
+				// push southern node onto the stack
+				callStack.push(maze[curr.x + 1][curr.y]);
+			}
 
+			// go north
+			if (canGo("north", room)) {
+				// push northern node onto the stack 
+				callStack.push(maze[curr.x - 1][curr.y]);
+			}
 
 		}
-
 
 		return path;
 	}
@@ -236,8 +539,7 @@ public class Main
 	 * Method to read the input from the file and populate the static reference of
 	 * maze accordingly
 	 */
-	public static void readInput(String fileName) 
-	 {
+	public static void readInput(String fileName) {
 		// Read input from file
 		File inFile = new File(fileName);
 		Scanner scan = null;
@@ -270,9 +572,8 @@ public class Main
 					// separate the input into each room
 					for (int j = 0; j < oneLine.length(); j += 4) {
 						String temp = oneLine.substring(j, j + 4);
-						maze[i][j / 4] = 
-								new Room(temp.charAt(0) - 48, temp.charAt(1) - 48,
-										temp.charAt(2) - 48, temp.charAt(3) - 48);
+						maze[i][j / 4] = new Room(new Point(i, j / 4), temp.charAt(0) - 48, temp.charAt(1) - 48,
+								temp.charAt(2) - 48, temp.charAt(3) - 48);
 					}
 
 				}
@@ -283,7 +584,7 @@ public class Main
 			}
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		} finally {
 			scan.close();
@@ -298,8 +599,7 @@ public class Main
 	 * @param mazeNum1   = least similar maze
 	 * @param mazeNum2   = corresponding least similar maze
 	 */
-	public static void writeOutput(String outputName, String mazeNum1, String mazeNum2) 
-	{
+	public static void writeOutput(String outputName, String mazeNum1, String mazeNum2) {
 		File outFile = new File(outputName);
 		java.io.PrintWriter writer = null;
 
@@ -309,7 +609,6 @@ public class Main
 			writer.print(mazeNum1 + " " + mazeNum2);
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			writer.close();
@@ -317,21 +616,10 @@ public class Main
 
 	}
 
-	public static void main(String[] args) 
-	{
-		// TODO Auto-generated method stub
-		
-		readInput("input.txt");
-		depthFirstSearch(mazes.get(0), new Point(0, 0));
+	public static void main(String[] args) {
+		readInput("test.txt");
+		String test = depthFirstSearch(mazes.get(0));
 
-		// // test canGoMethod
-		// System.out.println(canGo("west", mazes.get(0), new Point(0, 0))); // error
-		// System.out.println(canGo("south", mazes.get(0), new Point(0, 0))); // true
-		// System.out.println(canGo("east", mazes.get(0), new Point(0, 0))); // false
-		// System.out.println(canGo("north", mazes.get(0), new Point(0, 0))); // error
-
-
-		
 		System.out.print("Deron");
 
 	}

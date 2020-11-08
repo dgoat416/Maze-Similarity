@@ -1,8 +1,16 @@
-{
+ {
     "files.exclude": {
-        "**/.classpath": true,
-        "**/.project": true,
-        "**/.settings": true,
-        "**/.factorypath": true
-    }
+        "**/.classpath":true, 
+        "**/.project":true, 
+        "**/.settings":true, 
+        "**/.factorypath":true
+    }, 
+       
+    "java.format.onType.enabled":false, 
+    "java.format.comments.enabled":false, 
+    "java.format.enabled": true,
+    "java.format.settings.url":".\\.vscode\\Deron's Java Formatting Settings.xml", 
+    "java.format.settings.profile": "style",
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+   
 }
