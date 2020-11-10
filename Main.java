@@ -9,8 +9,8 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Arrays;
 import java.awt.Point;
+import java.util.*;
 
 /**
  * Class that houses the solution to CECS 328 Project 4 Similarity Mazes
@@ -18,11 +18,12 @@ import java.awt.Point;
  * @author DGOAT 
  * Date Started: 11/2/2020
  * Last Edit: 11/2/2020 
- * Date Finished:
+ * Date Finished: 11/9/2020
  * RESULT:
  * 
  */
-public class Main {
+public class Main 
+{
 
 	// static reference to the mazes of the room
 	public static List<Room[][]> mazes = new ArrayList<Room[][]>();
@@ -277,16 +278,109 @@ public class Main {
 
 	}
 
-	/**
-	 * Method to determine the least similar mazes
-	 */
-	public static void calcLeastSimilarMazes()
+
+	public static class LeastSimilarMazes
 	{
-		for (int i = 0; i < mazes.size(); i++)
+		public int lcs;
+
+		public int mIndex1;
+
+		public int mIndex2;
+
+		public LeastSimilarMazes()
 		{
+			this.lcs = Integer.MAX_VALUE;
+			this.mIndex1 = 0;
+			this.mIndex2 = 0;
+		}
+
+		public LeastSimilarMazes(int lcs, int index1, int index2)
+		{
+			this.lcs = lcs;
+			this.mIndex1 = index1;
+			this.mIndex2 = index2;
+		}
+
+		public static LeastSimilarMazes LEAST(LeastSimilarMazes lsm, LeastSimilarMazes lsm2)
+		{
+			if (Integer.min(lsm.lcs, lsm2.lcs) == lsm.lcs)
+			{
+				return lsm;
+			}
 			
+			else
+				return lsm2;
 		}
 	}
+
+	/**
+	 * Method to determine the least similar mazes
+	 * @return = a LeastSimilarMazes object which defines the lcs and  
+	 * 			 where the the lcs of all mazes in the input list are located
+	 */
+	public static LeastSimilarMazes calcLeastSimilarMazes()
+	{
+		List<String> mazePaths = new ArrayList<>();
+
+		// get all the maze paths
+		for (int i = 0; i < mazes.size(); i++)
+		{
+			String str = depthFirstSearch(mazes.get(i));
+			mazePaths.add(str);
+		}
+
+		LeastSimilarMazes lsm = new LeastSimilarMazes();
+
+		// compare every possible combination of the paths created
+		for (int j = 0; j < mazePaths.size(); j++)
+		{
+			for (int k = 1; k < mazePaths.size(); k++)
+			{
+				int lcs = lcs(mazePaths.get(j), mazePaths.get(k));
+				
+				if (Integer.min(lcs, lsm.lcs) < lsm.lcs)
+				{
+					lsm.lcs = lcs;
+					lsm.mIndex1 = j;
+					lsm.mIndex2 = k;
+				}
+			}
+		}
+
+		return lsm;
+	}
+
+	// public static int lcs(String X, String Y)
+	// {
+	// 	X = X.toUpperCase(Locale.ROOT);
+	// 	Y = Y.toUpperCase(Locale.ROOT);
+	// 	int m = X.length(), n = Y.length();
+
+	// 	// lookup table stores solution to already computed sub-problems
+	// 	// i.e. T[i][j] stores the length of LCS of substring
+	// 	// X[0..i-1] and Y[0..j-1]
+	// 	int[][] T = new int[m + 1][n + 1];
+
+	// 	// fill the lookup table in bottom-up manner
+	// 	for (int i = 1; i <= m; i++)
+	// 	{
+	// 		for (int j = 1; j <= n; j++)
+	// 		{
+	// 			// if current character of X and Y matches
+	// 			if (X.charAt(i - 1) == Y.charAt(j - 1)) {
+	// 				T[i][j] = T[i - 1][j - 1] + 1;
+	// 			}
+	// 			// else if current character of X and Y don't match,
+	// 			else {
+	// 				T[i][j] = Integer.max(T[i - 1][j], T[i][j - 1]);
+	// 			}
+	// 		}
+	// 	}
+
+	// 	// LCS will be last entry in the lookup table
+	// 	return T[m][n];
+	// }
+	
 
 	/**
 	 * Method to determine the longest common subsequence 
@@ -296,32 +390,31 @@ public class Main {
 	 * @return = the substring and the length of the substring
 	 */
 	public static int lcs(String s, String t) 
-	{
-		Map<String, Integer> hm = new HashMap<>();
-		s = "\0" + s;
-		t = "\0" + t;
-		int size = s.length() > t.length() ? s.length() : t.length();
-		int smSize = size == s.length() ? t.length() : s.length();
+	{ 
+		// make sure everything is of the same case
+		s = s.toUpperCase(Locale.ROOT);
+		t = t.toUpperCase(Locale.ROOT);
 
-		char[] sChar = s.toCharArray();
-		char[] tChar = t.toCharArray();
+		// get the size of current string size
+		int size = s.length();
+		int smSize = t.length();
 
-		int[][] lookup = new int[size][smSize];
+		// lookup table to prevent us from having to recalculate problems
+		// increase size to account for empty string/character case
+		int[][] lookup = new int[size + 1][smSize + 1];
 			
-		for (int i = 1; i < size; i++)
+		// this is where the dynamic programming actually happens
+		for (int i = 1; i < size + 1; i++)
 		{
-			for (int j = 1; j < smSize; j++)
+			for (int j = 1; j < smSize + 1; j++)
 			{
-				 if (i == 0 || j == 0)
+				// characters at this location match?
+				if (s.charAt(i - 1) == t.charAt(j - 1))
 				 {
-					 lookup[i][j] = 0;
+					lookup[i][j] = 1 + lookup[i - 1][j - 1];
 				 }
 
-				 else if (sChar[i - 1] == tChar[j - 1])
-				 {
-					lookup[i][j] = 1 + Integer.max(lookup[i][j - 1], lookup[i - 1][j]);
-				 }
-
+				 // no match? find the max between the higher ups on the table
 				 else 
 				 {
 					lookup[i][j] = Integer.max(lookup[i][j - 1], lookup[i - 1][j]);
@@ -329,19 +422,9 @@ public class Main {
 			}
 		}
 
-		int a = 0;
-		int b = 0;
-		int done = 0;
-
-		do 
-		{
-			a++; 
-			b++;
-		} while( a < size - 1 && b < smSize - 1);
-	
-
-
-		return lookup[a][b];
+		// dynamic programming answer always at the 
+		// southeast corner of the lookup table 
+		return lookup[size][smSize];
 	}
 
 	/**
@@ -394,6 +477,7 @@ public class Main {
 	 */
 	public static Room[][] closeDoor(Room[][] maze, Point curr, char c) 
 	{
+		// make sure it is of the same case
 		c = Character.toUpperCase(c);
 
 		// going north
@@ -446,6 +530,7 @@ public class Main {
 	 */
 	public static char getDirection(myPoint current, myPoint next) 
 	{
+		// find the difference between the two points
 		myPoint diff = next.subtract(current);
 
 		// same point send back a blank
@@ -556,6 +641,7 @@ public class Main {
 				tracker.put(curr, c);
 			}
 
+		
 			/* 
 				base case (no path out of the current room)
 				so we go back to the previous node			
@@ -700,6 +786,10 @@ public class Main {
 				// add maze to the list of mazes and reset maze
 				mazes.add(maze);
 				maze = new Room[size][size];
+
+				// get rid of the blank line
+				if (numMazes > 1)
+					scan.nextLine();
 			}
 
 		} 
@@ -719,19 +809,19 @@ public class Main {
 	 * Method to output the two least similar maze sequences
 	 * 
 	 * @param outputName = name of the output file
-	 * @param mazeNum1   = least similar maze
-	 * @param mazeNum2   = corresponding least similar maze
+	 * @param lsm = the object that defines the lcs and where the two mazes
+	 * 				that cause the lcs are in the maze list
 	 */
-	public static void writeOutput(String outputName, String mazeNum1, String mazeNum2) 
+	public static void writeOutput(String outputName, LeastSimilarMazes lsm) 
 	{
 		File outFile = new File(outputName);
-		java.io.PrintWriter writer = null;
+		PrintWriter writer = null;
 
 		try 
 		{
 			writer = new PrintWriter(outFile);
 
-			writer.print(mazeNum1 + " " + mazeNum2);
+			writer.print(lsm.mIndex1 + " " + lsm.mIndex2);
 
 		} catch (FileNotFoundException e) 
 		{
@@ -743,15 +833,34 @@ public class Main {
 
 	}
 
+
 	public static void main(String[] args) 
 	{
-		readInput("input.txt");
-		String test = depthFirstSearch(mazes.get(0));
+		String[] files = new String[] {"input.txt", "inputTest.txt"};
+		for (String s : files) {
+		readInput(s);
+		// String test = depthFirstSearch(mazes.get(1));
+
+		// for (int i = 0; i < mazes.size(); i++)
+		// {
+		// 	printMaze(mazes.get(i));
+		// }
 
 		int x = lcs("ab", "ab");
 		int y = lcs("abc", "ab");
 		int z = lcs("abcbdab", "bdcaba");
-		System.out.print( "\n\n\n" + test + "\nDeron");
+
+		LeastSimilarMazes lsm = calcLeastSimilarMazes();
+		writeOutput("testO.txt", lsm);
+
+
+		System.out.print( "\n\n\n" + "LSM: :" + lsm.lcs + "\nDeron");
+
+		// I THINK THE ISSUE LIES IN THE DFS METHOD 
+		// I THINK I NEED TO FIX THE DUPLICATES ISSUE
+		// IT MIGHT BE GIVING EXTRA LENGTH TO THE PATH
+		// NEED TO CHECK THAT THEY ARE RETURNING THE SAME THING
+		}
 
 	}
 
