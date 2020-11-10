@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.awt.Point;
-import java.util.*;
+import java.util.Locale;
 
 /**
  * Class that houses the solution to CECS 328 Project 4 Similarity Mazes
@@ -92,9 +92,13 @@ public class Main
 		 */
 		public int getOptions() 
 		{
+			// calculate the number of options we have
 			int preSum = n + s + w + e;
 
-			switch (preSum) {
+			// each case represents the number of options we have to explore
+			// check the javadocs for a more in depth explanation
+			switch (preSum) 
+			{
 				case 0:
 					return 4;
 				case 1:
@@ -278,15 +282,31 @@ public class Main
 
 	}
 
-
+	/**
+	 * Class to house the lcs and the indices of the mazes that create
+	 * the lcs
+	 */
 	public static class LeastSimilarMazes
 	{
+		/**
+		 * Least Common Subsequence
+		 */
 		public int lcs;
 
+		/**
+		 * Index of maze that creates lcs
+		 */
 		public int mIndex1;
 
+		/**
+		 * Index of maze that creates lcs
+		 */
 		public int mIndex2;
 
+		/**
+		 * Default Constructor
+		 * Sets everything to a default value
+		 */
 		public LeastSimilarMazes()
 		{
 			this.lcs = Integer.MAX_VALUE;
@@ -294,6 +314,12 @@ public class Main
 			this.mIndex2 = 0;
 		}
 
+		/**
+		 * Parameterized Constructor
+		 * @param lcs = least common subsequence between the mazes at index1 and index2
+		 * @param index1 = one index of the mazes w/ smallest lcs so far
+		 * @param index2 = another index of the mazes w/smallest lcs so far
+		 */
 		public LeastSimilarMazes(int lcs, int index1, int index2)
 		{
 			this.lcs = lcs;
@@ -301,6 +327,12 @@ public class Main
 			this.mIndex2 = index2;
 		}
 
+		/**
+		 * Method to determine the least similar mazes based on two LSM objects
+		 * @param lsm = one Least Similar Mazes object
+		 * @param lsm2 = another Least Similar Mazes object
+		 * @return = the object with the smallest lcs
+		 */
 		public static LeastSimilarMazes LEAST(LeastSimilarMazes lsm, LeastSimilarMazes lsm2)
 		{
 			if (Integer.min(lsm.lcs, lsm2.lcs) == lsm.lcs)
@@ -338,6 +370,7 @@ public class Main
 			{
 				int lcs = lcs(mazePaths.get(j), mazePaths.get(k));
 				
+				// if this lcs is the new minimum reset lsm
 				if (Integer.min(lcs, lsm.lcs) < lsm.lcs)
 				{
 					lsm.lcs = lcs;
@@ -350,66 +383,34 @@ public class Main
 		return lsm;
 	}
 
-	// public static int lcs(String X, String Y)
-	// {
-	// 	X = X.toUpperCase(Locale.ROOT);
-	// 	Y = Y.toUpperCase(Locale.ROOT);
-	// 	int m = X.length(), n = Y.length();
-
-	// 	// lookup table stores solution to already computed sub-problems
-	// 	// i.e. T[i][j] stores the length of LCS of substring
-	// 	// X[0..i-1] and Y[0..j-1]
-	// 	int[][] T = new int[m + 1][n + 1];
-
-	// 	// fill the lookup table in bottom-up manner
-	// 	for (int i = 1; i <= m; i++)
-	// 	{
-	// 		for (int j = 1; j <= n; j++)
-	// 		{
-	// 			// if current character of X and Y matches
-	// 			if (X.charAt(i - 1) == Y.charAt(j - 1)) {
-	// 				T[i][j] = T[i - 1][j - 1] + 1;
-	// 			}
-	// 			// else if current character of X and Y don't match,
-	// 			else {
-	// 				T[i][j] = Integer.max(T[i - 1][j], T[i][j - 1]);
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// LCS will be last entry in the lookup table
-	// 	return T[m][n];
-	// }
-	
-
 	/**
 	 * Method to determine the longest common subsequence 
 	 * between two strings
-	 * @param s = string 1
-	 * @param t = string 2
+	 * @param string1 = string 1 to compare
+	 * @param string2 = string 2 to compare
 	 * @return = the substring and the length of the substring
 	 */
-	public static int lcs(String s, String t) 
+	public static int lcs(String string1, String string2) 
 	{ 
 		// make sure everything is of the same case
-		s = s.toUpperCase(Locale.ROOT);
-		t = t.toUpperCase(Locale.ROOT);
+		string1 = string1.toUpperCase(Locale.ROOT);
+		string2 = string2.toUpperCase(Locale.ROOT);
 
 		// get the size of current string size
-		int size = s.length();
-		int smSize = t.length();
+		int size1 = string1.length();
+		int size2 = string2.length();
 
 		// lookup table to prevent us from having to recalculate problems
 		// increase size to account for empty string/character case
-		int[][] lookup = new int[size + 1][smSize + 1];
+		int[][] lookup = new int[size1 + 1][size2 + 1];
 			
 		// this is where the dynamic programming actually happens
-		for (int i = 1; i < size + 1; i++)
+		for (int i = 1; i < size1 + 1; i++)
 		{
-			for (int j = 1; j < smSize + 1; j++)
+			for (int j = 1; j < size2 + 1; j++)
 			{
 				// characters at this location match?
-				if (s.charAt(i - 1) == t.charAt(j - 1))
+				if (string1.charAt(i - 1) == string2.charAt(j - 1))
 				 {
 					lookup[i][j] = 1 + lookup[i - 1][j - 1];
 				 }
@@ -424,7 +425,7 @@ public class Main
 
 		// dynamic programming answer always at the 
 		// southeast corner of the lookup table 
-		return lookup[size][smSize];
+		return lookup[size1][size2];
 	}
 
 	/**
@@ -438,26 +439,39 @@ public class Main
 	public static boolean canGo(String direction, Room room) 
 	{
 
+		// want to go north
 		if (direction.toUpperCase().equals("NORTH")) 
 		{
+			// can't go north
 			if (room.n == 1)
 				return false;
 		} 
+		
+		// want to go south
 		else if (direction.toUpperCase().equals("SOUTH")) 
 		{
+			// can't go south
 			if (room.s == 1)
 				return false;
 		} 
+
+		// want to go west
 		else if (direction.toUpperCase().equals("WEST")) 
 		{
+			// can't go west
 			if (room.w == 1)
 				return false;
 		} 
+
+		// want to go east
 		else if (direction.toUpperCase().equals("EAST")) 
 		{
+			// can't go east
 			if (room.e == 1)
 				return false;
 		} 
+
+		// some issue 
 		else
 		{
 			System.out.print("\n\nError in canGo(String, Room[][], Point) method. "
@@ -836,31 +850,14 @@ public class Main
 
 	public static void main(String[] args) 
 	{
-		String[] files = new String[] {"input.txt", "inputTest.txt"};
-		for (String s : files) {
-		readInput(s);
-		// String test = depthFirstSearch(mazes.get(1));
+		// read the input
+		readInput("inputTest.txt");
 
-		// for (int i = 0; i < mazes.size(); i++)
-		// {
-		// 	printMaze(mazes.get(i));
-		// }
-
-		int x = lcs("ab", "ab");
-		int y = lcs("abc", "ab");
-		int z = lcs("abcbdab", "bdcaba");
-
+		// calculate the least similar mazes
 		LeastSimilarMazes lsm = calcLeastSimilarMazes();
-		writeOutput("testO.txt", lsm);
 
-
-		System.out.print( "\n\n\n" + "LSM: :" + lsm.lcs + "\nDeron");
-
-		// I THINK THE ISSUE LIES IN THE DFS METHOD 
-		// I THINK I NEED TO FIX THE DUPLICATES ISSUE
-		// IT MIGHT BE GIVING EXTRA LENGTH TO THE PATH
-		// NEED TO CHECK THAT THEY ARE RETURNING THE SAME THING
-		}
+		// write the output
+		writeOutput("output.txt", lsm);
 
 	}
 
