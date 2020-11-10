@@ -1,5 +1,3 @@
-
-// Deron Washington II
 import java.io.File;
 import java.util.Scanner;
 import java.io.PrintWriter;
@@ -851,7 +849,7 @@ public class Main
 	public static void main(String[] args) 
 	{
 		// read the input
-		readInput("inputTest.txt");
+		readInput("input.txt");
 
 		// calculate the least similar mazes
 		LeastSimilarMazes lsm = calcLeastSimilarMazes();
